@@ -8,14 +8,20 @@
 
 #include "../Image/Image.h"
 
-static const char* CHAR_SET = "@%#*+=-:. ";
-// static const char* CHAR_SET = " .:-=+*#%@";
-// static const char* CHAR_SET = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^";
+typedef struct ASCIIGenConfig {
+    const char* char_set;
+    float terminal_aspect_ratio;
+    bool use_average_pooling;
+} ASCIIGenConfig;
 
-static inline void _getTerminalDimensions(int* width, int* height);
-static inline void _calculateASCIIDimensions(Image* img, float aspect_ratio, int* width, int* height, float* scale);
-static inline char _brightness2Char(float brightness);
+extern const ASCIIGenConfig DEFAULT_CONFIG;
 
-void Generator_generateASCII(Image* img);
+// Generate ASCII from an already loaded image
+// - Does NOT take ownership of `img`, so the caller must free it.
+// - Writes output ti given FILE*
+bool Generator_generateASCIIFromImage(Image* img, FILE* output, const ASCIIGenConfig* config);
+
+// Loads image, generates ASCII and saves to file
+bool Generator_generateACIIFromFile(const char* input_path, const char* output_path, const ASCIIGenConfig* config);
 
 #endif // GENERATOR_H
