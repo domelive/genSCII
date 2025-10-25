@@ -7,9 +7,6 @@
 #include "Image/Image.h"
 #include "Generator/Generator.h"
 
-// char set ordered from brightest to lightest
-// static const char* CHAR_SET = " .:-=+*#%@";
-
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         printf("Usage: ./genSCII <img_path>");
@@ -23,7 +20,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    generateASCII(img);
+    Generator_generateASCII(img);
 
     Image_free(img);
     return 0;

@@ -16,6 +16,6 @@ static inline void _getTerminalDimensions(int* width, int* height);
 static inline void _calculateASCIIDimensions(Image* img, float aspect_ratio, int* width, int* height, float* scale);
 static inline char _brightness2Char(float brightness);
 
-void generateASCII(Image* img);
+void Generator_generateASCII(Image* img);
 
 #endif // GENERATOR_H
