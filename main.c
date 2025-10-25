@@ -18,82 +18,10 @@ int main(int argc, char* argv[]) {
 
     const char* path = argv[1];
 
-    // Save grayscale image (optional, for debugging)
-    // stbi_write_jpg("gray-image.jpg", width, height, 1, gray_img, 100);
-    
-    // Get terminal size
-    // struct winsize win;
-    // ioctl(STDOUT_FILENO, TIOCGWINSZ, &win);
-    // int term_width = win.ws_col;
-    // int term_height = win.ws_row;
-    //
-    // // Aspect ratio correction (typical terminal character aspect ratio is ~0.5)
-    // float aspect_ratio_correction = 0.5f;
-    //
-    // // Calculate scaling factors
-    // float scale_x = (float)width / term_width;
-    // float scale_y = (float)height / term_height;
-    // float scale = (scale_x > scale_y) ? scale_x : scale_y;
-    //
-    // // Calculate ASCII dimensions
-    // int ascii_width = (int)(width / scale);
-    // int ascii_height = (int)(height / (scale * aspect_ratio_correction));
-    //
-    // printf("Terminal: %d cols × %d rows\n", term_width, term_height);
-    // printf("Image: %dx%d\n", width, height);
-    // printf("ASCII: %dx%d (scale %.2f)\n", ascii_width, ascii_height, scale);
-    //
-    // // Calculate padding for centering
-    // int horizontal_padding = (term_width - ascii_width) / 2;
-    // int vertical_padding = (term_height - ascii_height) / 2;
-    //
-    // // Add vertical padding (top)
-    // for (int i = 0; i < vertical_padding && i < term_height; i++) {
-    //     putchar('\n');
-    // }
-    //
-    // // Generate ASCII art
-    // for (int y = 0; y < ascii_height; y++) {
-    //     // Add horizontal padding (left)
-    //     for (int i = 0; i < horizontal_padding && i < term_width; i++) {
-    //         putchar(' ');
-    //     }
-    //
-    //     for (int x = 0; x < ascii_width; x++) {
-    //         // Map ASCII position back to original image coordinates
-    //         int pos_x = (int)((float)x * scale);
-    //         int pos_y = (int)((float)y * scale * aspect_ratio_correction);
-    //
-    //         // Clamp to image boundaries
-    //         if (pos_x >= width) pos_x = width - 1;
-    //         if (pos_y >= height) pos_y = height - 1;
-    //
-    //         // Get brightness value
-    //         unsigned char brightness = gray_img[pos_y * width + pos_x];
-    //
-    //         // Normalize and map to character set
-    //         float norm_brightness = (float)brightness / 255.0f;
-    //         int idx = (int)(norm_brightness * (strlen(CHAR_SET) - 1));
-    //
-    //         if (idx < 0) idx = 0;
-    //         if (idx >= strlen(CHAR_SET)) idx = strlen(CHAR_SET) - 1;
-    //
-    //         char c = CHAR_SET[idx];
-    //         putchar(c);
-    //     }
-    //     putchar('\n');
-    // }
-    //
-    // // Add vertical padding (bottom) if needed
-    // int remaining_vertical_padding = term_height - vertical_padding - ascii_height;
-    // for (int i = 0; i < remaining_vertical_padding && i < term_height; i++) {
-    //     putchar('\n');
-    // }
-
     Image* img = Image_load(path);    
-
-    // for debugging purposes
-    // Image_save(gray_img, "gray.png");
+    if (!img) {
+        exit(EXIT_FAILURE);
+    }
 
     generateASCII(img);
 

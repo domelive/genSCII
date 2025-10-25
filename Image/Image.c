@@ -108,18 +108,19 @@ Image* Image_toGrayscale(const Image* original) {
             unsigned char g = original->data[pixel_index + 1];
             unsigned char b = original->data[pixel_index + 2];
         
-            grayImg->data[y * original->width + x] = (r + g + b) / 3.0f;
             
-            // if (original->channels == 4) {
-            //     unsigned char a = original->data[pixel_index + 3];
-            //     if (a < 128) {
-            //         grayImg->data[y * original->width + x] = 0;
-            //     } else {
-            //         grayImg->data[y * original->width + x] = (r + g + b) / 3.0f;
-            //     }               
-            // } else {
-            //     grayImg->data[y * original->width + x] = (r + g + b) / 3.0f;
-            // }
+            if (original->channels == 4) {
+                unsigned char a = original->data[pixel_index + 3];
+                if (a < 128) {
+                    grayImg->data[y * original->width + x] = 0;
+                } else {
+                    grayImg->data[y * original->width + x] = (r + g + b) / 3.0f;
+                    // grayImg->data[y * original->width + x] = (0.2126f * r) + (0.7152 * g) + (0.0722 * b);
+                }               
+            } else {
+                grayImg->data[y * original->width + x] = (r + g + b) / 3.0f;
+                // grayImg->data[y * original->width + x] = (0.2126f * r) + (0.7152 * g) + (0.0722 * b);
+            }
         }
     }
 

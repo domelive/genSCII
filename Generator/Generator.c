@@ -1,5 +1,4 @@
 #include "Generator.h"
-#include <stdio.h>
 
 static inline void _getTerminalDimensions(int* width, int* height) {
     struct winsize win;
@@ -14,12 +13,12 @@ static inline void _calculateASCIIDimensions(Image* img, float aspect_ratio, int
     _getTerminalDimensions(&term_width, &term_height);
 
     float scale_x = (float)img->width / term_width;
-    float scale_y = (float)img->height / term_height;
+    float scale_y = (float)img->height / (term_height * aspect_ratio);
     float s = (scale_x > scale_y) ? scale_x : scale_y;
 
     *scale = s;
     *width = (int)(img->width / s);
-    *height = (int)(img->height / (s* aspect_ratio));
+    *height = (int)(img->height / (s * aspect_ratio));
 }
 
 static inline char _brightness2Char(float brightness) {
@@ -33,15 +32,21 @@ static inline char _brightness2Char(float brightness) {
 }
 
 void generateASCII(Image* img) {
+    FILE* fd = fopen("generated_image.txt", "w");
+    if (!fd) {
+        fprintf(stderr, "Error opening file\n");
+        exit(EXIT_FAILURE);       
+    }
+
     Image* grayImg = Image_toGrayscale(img);
 
-    float aspect_ratio = 0.5f;
-    printf("Image: %dx%d\n", img->width, img->height);
+    float aspect_ratio = 2.0f;
+    // fprintf(fd, "Image: %dx%d\n", img->width, img->height);
  
     float scale;
     int ascii_width, ascii_height;
     _calculateASCIIDimensions(img, aspect_ratio, &ascii_width, &ascii_height, &scale);
-    printf("ASCII: %dx%d (scale %.2f)\n", ascii_width, ascii_height, scale);
+    // fprintf(fd, "ASCII: %dx%d (scale %.2f)\n", ascii_width, ascii_height, scale);
 
     for (int y = 0; y < ascii_height; y++) {
         for (int x = 0; x < ascii_width; x++) {
@@ -52,11 +57,15 @@ void generateASCII(Image* img) {
             if (pos_y >= img->height) pos_y = img->height - 1;
 
             int idx = pos_y * img->width + pos_x;
-            putchar(_brightness2Char((float)grayImg->data[idx]));
+            char c = _brightness2Char((float)grayImg->data[idx]);
+            
+            // putchar(c);
+            fputc(c, fd);
         }
-        putchar('\n');
+        fputc('\n', fd);
     }
 
+    fclose(fd);
+
     Image_free(grayImg);
-    Image_free(img);
 }
