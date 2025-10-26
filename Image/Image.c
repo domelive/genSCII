@@ -92,7 +92,7 @@ void Image_free(Image* img) {
     img->allocationType = NO_ALLOCATION;
 }
 
-Image* Image_toGrayscale(const Image* original) {
+Image* Image_toGrayscale(const Image* original, GrayscaleMethod method) {
     // int channels = original->channels == 4 ? 2 : 1;
     Image* grayImg = Image_create(original->width, original->height, 1, false);
     if (!grayImg) {
@@ -114,12 +114,18 @@ Image* Image_toGrayscale(const Image* original) {
                 if (a < 128) {
                     grayImg->data[y * original->width + x] = 0;
                 } else {
-                    grayImg->data[y * original->width + x] = (r + g + b) / 3.0f;
-                    // grayImg->data[y * original->width + x] = (0.2126f * r) + (0.7152 * g) + (0.0722 * b);
+                    if (method == GRAY_AVERAGE) {
+                        grayImg->data[y * original->width + x] = (r + g + b) / 3.0f;
+                    } else {
+                        grayImg->data[y * original->width + x] = (0.2126f * r) + (0.7152 * g) + (0.0722 * b);
+                    }
                 }               
             } else {
-                grayImg->data[y * original->width + x] = (r + g + b) / 3.0f;
-                // grayImg->data[y * original->width + x] = (0.2126f * r) + (0.7152 * g) + (0.0722 * b);
+                if (method == GRAY_AVERAGE) {
+                    grayImg->data[y * original->width + x] = (r + g + b) / 3.0f;
+                } else {
+                    grayImg->data[y * original->width + x] = (0.2126f * r) + (0.7152 * g) + (0.0722 * b);
+                }
             }
         }
     }

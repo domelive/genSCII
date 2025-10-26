@@ -8,10 +8,19 @@
 
 #include "../Image/Image.h"
 
+typedef enum ColorMode {
+    COLOR_NONE,
+    // COLOR_16,
+    COLOR_256,
+    // COLOR_TRUE
+} ColorMode;
+
 typedef struct ASCIIGenConfig {
     const char* char_set;
     float terminal_aspect_ratio;
     bool use_average_pooling;
+    GrayscaleMethod grayscale_method;
+    ColorMode color_mode;
 } ASCIIGenConfig;
 
 extern const ASCIIGenConfig DEFAULT_CONFIG;

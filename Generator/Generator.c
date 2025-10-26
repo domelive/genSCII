@@ -48,6 +48,50 @@ static inline float _sampleRegion(Image* gray_img, int x0, int y0, int x1, int y
     return (count > 0) ? total / count : 0.0f;
 }
 
+static inline void _sampleRGBRegion(Image* rgb_img, int x0, int y0, int x1, int y1,
+                                    bool use_avg,
+                                    unsigned char* out_r,
+                                    unsigned char* out_g,
+                                    unsigned char* out_b) {
+    x0 = (x0 < 0) ? 0 : x0;
+    y0 = (y0 < 0) ? 0 : y0;
+    x1 = (x1 > rgb_img->width) ? rgb_img->width : x1;
+    y1 = (y1 > rgb_img->height) ? rgb_img->height : y1;
+    
+    if (x0 >= x1 || y0 > y1) {
+        *out_r = *out_g = *out_b = 0;
+        return;
+    } 
+
+    if (!use_avg) {
+        int idx = y0 * rgb_img->width + x0;
+        *out_r = rgb_img->data[idx * rgb_img->channels + 0];
+        *out_g = rgb_img->data[idx * rgb_img->channels + 1];
+        *out_b = rgb_img->data[idx * rgb_img->channels + 2];
+        return;
+    }
+
+    int count = 0;
+    long long sum_r = 0, sum_g = 0, sum_b = 0;
+    for (int yy = y0; yy < y1; yy++) {
+        for (int xx = x0; xx < x1; xx++) {
+            int pixel_idx = yy * rgb_img->width + xx;
+            sum_r += rgb_img->data[pixel_idx * rgb_img->channels + 0];
+            sum_g += rgb_img->data[pixel_idx * rgb_img->channels + 1];
+            sum_b += rgb_img->data[pixel_idx * rgb_img->channels + 2];
+            count++;
+        }
+    }
+
+    if (count > 0) {
+        *out_r = (unsigned char)(sum_r / count);
+        *out_g = (unsigned char)(sum_g / count);
+        *out_b = (unsigned char)(sum_b / count);
+    } else {
+        *out_r = *out_g = *out_b = 0;
+    }
+}
+
 static inline void _computeASCIIDims(Image* img, const ASCIIGenConfig* config,
                                      int term_width, int term_height,
                                      int* out_width, int* out_height,
@@ -82,20 +126,56 @@ static inline void _computeASCIIDims(Image* img, const ASCIIGenConfig* config,
     *out_scale_y = (float)img->height / *out_height;
 }
 
-static inline void _renderASCIIToFile(FILE* output, Image* gray_img, const ASCIIGenConfig* config,
-                                      int ascii_width, int ascii_height, float scale_x, float scale_y) {
+static inline int _rgbToAnsi256(unsigned char r, unsigned char g, unsigned char b) {
+    // convert each channel from 0-255 to a 0-5 scale
+    int r6 = (r * 6) / 256;
+    int g6 = (g * 6) / 256;
+    int b6 = (b * 6) / 256;
+    
+    // clamp just for safety
+    if (r6 > 5) r6 = 5;
+    if (g6 > 5) g6 = 5;
+    if (b6 > 5) b6 = 5;
+
+    // compute and return index
+    return 16 + (36 * r6) + (6 * g6) + b6;
+}
+
+static inline void _renderASCIIToFile(FILE* output, 
+                                      Image* render_img,   // grayscale or original
+                                      Image* original_img, // always original RGB image
+                                      const ASCIIGenConfig* config,
+                                      int ascii_width, int ascii_height, 
+                                      float scale_x, float scale_y) {
     for (int y = 0; y < ascii_height; y++) {
         for (int x = 0; x < ascii_width; x++) {
             int x0 = (int)(x * scale_x);
             int x1 = (int)((x + 1) * scale_x);
             int y0 = (int)(y * scale_y);
             int y1 = (int)((y + 1) * scale_y);
-
-            float brightness = _sampleRegion(gray_img, x0, y0, x1, y1, config->use_average_pooling);
             
-            char c = _brightness2Char(brightness, config->char_set);
+            float luminance;
+            unsigned char avg_r = 0, avg_g = 0, avg_b = 0;
 
-            fputc(c, output);
+            if (config->color_mode == COLOR_NONE) {
+                luminance = _sampleRegion(render_img, x0, y0, x1, y1, config->use_average_pooling);
+            } else {
+                _sampleRGBRegion(original_img, x0, y0, x1, y1, config->use_average_pooling, &avg_r, &avg_g, &avg_b);
+                luminance = 0.2126f*avg_r + 0.7152f*avg_g + 0.0722f*avg_b;
+            }
+
+            char c = _brightness2Char(luminance, config->char_set);
+
+            switch (config->color_mode) {
+                case COLOR_256: {
+                    int ansi_code = _rgbToAnsi256(avg_r, avg_g, avg_b);
+                    fprintf(output, "\x1b[38;5;%dm%c\x1b[0m", ansi_code, c);
+                    break;
+                }
+                default:
+                    fputc(c, output);
+                    break;
+            }
         }
         fputc('\n', output);
     }
@@ -103,18 +183,25 @@ static inline void _renderASCIIToFile(FILE* output, Image* gray_img, const ASCII
 
 const ASCIIGenConfig DEFAULT_CONFIG = {
     .char_set = "@%#*+=-:. ",
-    // .char_set = " .:-=+*#%@";
-    // .char_set = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^",
     .terminal_aspect_ratio = 2.0f,
-    .use_average_pooling = true
+    .use_average_pooling = true,
+    .grayscale_method = GRAY_LUMINANCE,
+    .color_mode = COLOR_NONE,
 };
 
 bool Generator_generateASCIIFromImage(Image* img, FILE* output, const ASCIIGenConfig* config) {
     if (!img || !output) return false;
     const ASCIIGenConfig* cfg = config ? config : &DEFAULT_CONFIG;
-    
-    Image* gray = Image_toGrayscale(img);
-    if (!gray) return false;
+ 
+    Image* render_img = NULL;
+    bool owns_render_img = false;
+
+    if (cfg->color_mode == COLOR_NONE) {
+        render_img = Image_toGrayscale(img, cfg->grayscale_method);
+        owns_render_img = true;
+    } else {
+        render_img = img;
+    }
 
     int term_width, term_height;
     _getTerminalDimensions(&term_width, &term_height);
@@ -123,9 +210,9 @@ bool Generator_generateASCIIFromImage(Image* img, FILE* output, const ASCIIGenCo
     float scale_x, scale_y;
     _computeASCIIDims(img, cfg, term_width, term_height, &ascii_width, &ascii_height, &scale_x, &scale_y);
 
-    _renderASCIIToFile(output, gray, cfg, ascii_width, ascii_height, scale_x, scale_y);
+    _renderASCIIToFile(output, render_img, img, cfg, ascii_width, ascii_height, scale_x, scale_y);
 
-    Image_free(gray);
+    if (owns_render_img) Image_free(render_img);
     
     return true;
 }

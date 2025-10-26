@@ -7,6 +7,11 @@
 #include <string.h>
 #include <unistd.h>
 
+typedef enum GrayscaleMethod {
+    GRAY_AVERAGE,
+    GRAY_LUMINANCE
+} GrayscaleMethod;
+
 typedef enum AllocationType {
     NO_ALLOCATION,
     SELF_ALLOCATED,
@@ -30,6 +35,6 @@ Image* Image_create(int width, int height, int channels, bool zeroed);
 void Image_save(const Image* img, const char* filename);
 void Image_free(Image* img);
 
-Image* Image_toGrayscale(const Image* original);
+Image* Image_toGrayscale(const Image* original, GrayscaleMethod method);
 
 #endif // IMAGE_H
