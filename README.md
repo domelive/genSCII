@@ -19,8 +19,9 @@ A lightweight, terminal-based ASCII art generator written in C that converts ima
 - Cross-platform terminal detection via ioctl (falls back to 80x24 if unavailable)
 
 ## Usage
-
+```
 ./ascii-art-gen --input image.jpg --output output.txt [OPTIONS]
+```
 
 ### Required Arguments
 
@@ -29,7 +30,7 @@ A lightweight, terminal-based ASCII art generator written in C that converts ima
 
 ### Optional Arguments
 
-- -c, --charset SET        : Character set for brightness mapping (default: "@%#*+=-:. ")
+- -c, --charset SET        : Character set for brightness mapping (default: `@%#*+=-:. `)
 - -a, --aspect RATIO       : Terminal character aspect ratio (default: 2.0)
 - -g, --gray-method METHOD : Grayscale method: average or luminance (default: luminance)
 - -m, --colored MODE       : Color mode: 256 (default: none/grayscale)
@@ -38,13 +39,19 @@ A lightweight, terminal-based ASCII art generator written in C that converts ima
 ### Examples
 
 Basic grayscale ASCII art
+```
 ./ascii-art-gen -i photo.jpg -o art.txt
+```
 
 With custom character set and 256-color support
+```
 ./ascii-art-gen -i cat.png -o colorful_cat.txt -c " .:-=+*#%@" -m 256
+```
 
 Using average grayscale and custom aspect ratio
+```
 ./ascii-art-gen -i landscape.jpg -o ascii_landscape.txt -g average -a 1.8
+```
 
 Tip: For best results in terminal, use a monospaced font, ensure your terminal supports ANSI 256 colors if using -m 256 and for the best detailed results zoom out the terminal as much as possible.
 
@@ -61,23 +68,23 @@ Tip: For best results in terminal, use a monospaced font, ensure your terminal s
 ### Planned Features
 
 - Dithering support:
-  - Floyd-Steinberg error diffusion
-  - Ordered dithering matrices
+  - [ ] Floyd-Steinberg error diffusion
+  - [ ] Ordered dithering matrices
 - Edge/border detection:
-  - Sobel or Canny edge highlighting in ASCII output
-  - Contour-aware character selection
+  - [ ] Sobel or Canny edge highlighting in ASCII output
+  - [ ] Contour-aware character selection
 - Interactive terminal mode:
-  - Real-time preview with live terminal resizing
-  - Keyboard controls for zoom/pan
+  - [ ] Real-time preview with live terminal resizing
+  - [ ] Keyboard controls for zoom/pan
 - Extended color support:
-  - True color (24-bit ANSI escape sequences)
-  - 16-color mode fallback
+  - [ ] True color (24-bit ANSI escape sequences)
+  - [ ] 16-color mode fallback
 - Performance optimizations:
-  - SIMD-accelerated sampling
-  - Multithreaded region processing
+  - [ ] SIMD-accelerated sampling
+  - [ ] Multithreaded region processing
 - Additional output formats:
-  - HTML with embedded styles
-  - SVG vector output
+  - [ ] HTML with embedded styles
+  - [ ] SVG vector output
 
 ## Dependencies
 
