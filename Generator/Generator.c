@@ -1,6 +1,4 @@
 #include "Generator.h"
-#include <limits.h>
-#include <stdio.h>
 
 static inline void _getTerminalDimensions(int* width, int* height) {
     struct winsize w;
@@ -229,33 +227,38 @@ static inline void _renderASCIIToFile(FILE* output,
 }
 
 const ASCIIGenConfig DEFAULT_CONFIG = {
-    .char_set = "@%#*+=-:. ",
+    .char_set = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~i!lI;:,^'",
     .terminal_aspect_ratio = 2.0f,
     .use_average_pooling = true,
     .grayscale_method = GRAY_LUMINANCE,
     .color_mode = COLOR_NONE,
+    .dither_mode = DITHER_NONE,
 };
 
 bool Generator_generateASCIIFromImage(Image* img, FILE* output, const ASCIIGenConfig* config) {
     if (!img || !output) return false;
     const ASCIIGenConfig* cfg = config ? config : &DEFAULT_CONFIG;
  
-    Image* render_img = NULL;
-    bool owns_render_img = false;
-
-    if (cfg->color_mode == COLOR_NONE) {
-        render_img = Image_toGrayscale(img, cfg->grayscale_method);
-        owns_render_img = true;
-    } else {
-        render_img = img;
-    }
-
     int term_width, term_height;
     _getTerminalDimensions(&term_width, &term_height);
 
     int ascii_width, ascii_height;
     float scale_x, scale_y;
     _computeASCIIDims(img, cfg, term_width, term_height, &ascii_width, &ascii_height, &scale_x, &scale_y);
+    
+    Image* render_img = NULL;
+    bool owns_render_img = false;
+
+    if (cfg->color_mode == COLOR_NONE) {
+        render_img = Image_toGrayscale(img, cfg->grayscale_method);
+        owns_render_img = true;
+    
+        if (cfg->dither_mode == DITHER_FLOYD_STEINBERG) {
+            Dithering_applyFloydSteinberg(render_img, ascii_width, ascii_height, scale_x, scale_y, cfg->char_set);
+        }
+    } else {
+        render_img = img;
+    }
 
     _renderASCIIToFile(output, render_img, img, cfg, ascii_width, ascii_height, scale_x, scale_y);
 

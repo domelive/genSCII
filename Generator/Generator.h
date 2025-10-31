@@ -3,10 +3,17 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 
+#include "Dithering.h"
 #include "../Image/Image.h"
+
+typedef enum DitherMode {
+    DITHER_NONE,
+    DITHER_FLOYD_STEINBERG
+} DitherMode;
 
 typedef enum ColorMode {
     COLOR_NONE,
@@ -21,6 +28,7 @@ typedef struct ASCIIGenConfig {
     bool use_average_pooling;
     GrayscaleMethod grayscale_method;
     ColorMode color_mode;
+    DitherMode dither_mode;
 } ASCIIGenConfig;
 
 extern const ASCIIGenConfig DEFAULT_CONFIG;

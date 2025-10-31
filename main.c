@@ -12,6 +12,7 @@ static struct option long_options[] = {
     { "aspect",      required_argument, 0, 'a' },
     { "gray-method", required_argument, 0, 'g' },
     { "colored",     required_argument, 0, 'm' },
+    { "dithering",   required_argument, 0, 'd' },
     { "help",        no_argument,       0, 'h' },
     {0, 0, 0, 0}
 };
@@ -23,10 +24,11 @@ int main(int argc, char* argv[]) {
     float aspect = DEFAULT_CONFIG.terminal_aspect_ratio;
     GrayscaleMethod method = DEFAULT_CONFIG.grayscale_method;
     ColorMode color = DEFAULT_CONFIG.color_mode;
+    DitherMode dither = DEFAULT_CONFIG.dither_mode;
 
     int opt;
     int long_index = 0;
-    while ((opt = getopt_long(argc, argv, "i:o:c:a:g:m:h", long_options, &long_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "i:o:c:a:g:m:d:h", long_options, &long_index)) != -1) {
         switch (opt) {
             case 'i':
                 input_path = optarg;
@@ -62,6 +64,14 @@ int main(int argc, char* argv[]) {
                     return 1;
                 }
                 break;
+            case 'd':
+                if (strcmp(optarg, "floyd-steinberg") == 0) {
+                    dither = DITHER_FLOYD_STEINBERG;
+                } else {
+                    printf("%s is not a valid dither algorithm.\n", optarg); 
+                    return 1;
+                }
+                break;
             case 'h':
                 printf("Usage: %s [--input FILE] [--output FILE] [--charset SET] [--aspect RATIO] [--gray-method average|luminance]\n", argv[0]);
                 return 0;
@@ -81,6 +91,7 @@ int main(int argc, char* argv[]) {
     cfg.terminal_aspect_ratio = aspect;
     cfg.grayscale_method = method;
     cfg.color_mode = color;
+    cfg.dither_mode = dither;
 
     if (!Generator_generateACIIFromFile(input_path, output_path, &cfg)) {
         fprintf(stderr, "Failed to generate ASCII art.\n");

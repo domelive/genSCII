@@ -68,7 +68,7 @@ Tip: For best results in terminal, use a monospaced font, ensure your terminal s
 ### Planned Features
 
 - Dithering support:
-  - [ ] Floyd-Steinberg error diffusion
+  - [x] Floyd-Steinberg error diffusion
   - [ ] Ordered dithering matrices
 - Edge/border detection:
   - [ ] Sobel or Canny edge highlighting in ASCII output
