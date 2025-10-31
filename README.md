@@ -77,8 +77,8 @@ Tip: For best results in terminal, use a monospaced font, ensure your terminal s
   - [ ] Real-time preview with live terminal resizing
   - [ ] Keyboard controls for zoom/pan
 - Extended color support:
-  - [ ] True color (24-bit ANSI escape sequences)
-  - [ ] 16-color mode fallback
+  - [x] True color (24-bit ANSI escape sequences)
+  - [x] 16-color mode fallback
 - Performance optimizations:
   - [ ] SIMD-accelerated sampling
   - [ ] Multithreaded region processing
