@@ -52,11 +52,11 @@ int main(int argc, char* argv[]) {
                 break;
             case 'm':
                 if (strcmp(optarg, "16") == 0) {
-                    // color = COLOR_16;
+                    color = COLOR_16;
                 } else if (strcmp(optarg, "256") == 0) {
                     color = COLOR_256;
                 } else if (strcmp(optarg, "true") == 0) {
-                    // color = COLOR_TRUE;
+                    color = COLOR_TRUE;
                 } else {
                     printf("%s is not a valid color mode.\n", optarg); 
                     return 1;

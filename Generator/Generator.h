@@ -10,9 +10,9 @@
 
 typedef enum ColorMode {
     COLOR_NONE,
-    // COLOR_16,
+    COLOR_16,
     COLOR_256,
-    // COLOR_TRUE
+    COLOR_TRUE
 } ColorMode;
 
 typedef struct ASCIIGenConfig {

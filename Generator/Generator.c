@@ -1,4 +1,5 @@
 #include "Generator.h"
+#include <limits.h>
 #include <stdio.h>
 
 static inline void _getTerminalDimensions(int* width, int* height) {
@@ -141,6 +142,55 @@ static inline int _rgbToAnsi256(unsigned char r, unsigned char g, unsigned char 
     return 16 + (36 * r6) + (6 * g6) + b6;
 }
 
+static inline int _rgbToAnsi16(unsigned char r, unsigned char g, unsigned char b) {
+    static const unsigned char ANSI16_RGB[16][3] = {
+        {  0,   0,   0  }, { 128, 0,  0  }, { 0, 128,  0  }, { 128, 128,  0  },
+        {  0 ,  0,  128 }, { 128, 0, 128 }, { 0, 128, 128 }, { 192, 192, 192 },
+        { 128, 128, 128 }, { 255, 0,  0  }, { 0, 255,  0  }, { 255, 255,  0  },
+        {  0,   0,  255 }, { 255, 0, 255 }, { 0, 255, 255 }, { 255, 255, 255 }
+    };
+
+    int best_index = 0;
+    long long min_dist = LLONG_MAX;
+
+    for (int i = 0; i < 16; i++) {
+        long long dr = r - ANSI16_RGB[i][0];
+        long long dg = g - ANSI16_RGB[i][1];
+        long long db = b - ANSI16_RGB[i][2];
+
+        long long dist = dr*dr + dg*dg + db*db;
+
+        if (dist < min_dist) {
+            min_dist = dist;
+            best_index = i;
+        }
+    }
+
+    return best_index;
+}
+
+static inline void _rgbToAnsiEscape(unsigned char r, unsigned char g, unsigned char b,
+                                    ColorMode mode,
+                                    char* out_buffer, size_t buffer_size) {
+    switch (mode) {
+        case COLOR_16: {
+            int index = _rgbToAnsi16(r, g, b);
+            snprintf(out_buffer, buffer_size, "38;5;%d", index); 
+            break;
+        }
+        case COLOR_256: {
+            int index = _rgbToAnsi256(r, g, b);
+            snprintf(out_buffer, buffer_size, "38;5;%d", index); 
+            break;
+        }
+        case COLOR_TRUE:
+            snprintf(out_buffer, buffer_size, "38;2;%d;%d;%d", r, g, b); 
+            break;
+        default:
+            out_buffer[0] = '\0';
+    }
+}
+
 static inline void _renderASCIIToFile(FILE* output, 
                                       Image* render_img,   // grayscale or original
                                       Image* original_img, // always original RGB image
@@ -166,15 +216,12 @@ static inline void _renderASCIIToFile(FILE* output,
 
             char c = _brightness2Char(luminance, config->char_set);
 
-            switch (config->color_mode) {
-                case COLOR_256: {
-                    int ansi_code = _rgbToAnsi256(avg_r, avg_g, avg_b);
-                    fprintf(output, "\x1b[38;5;%dm%c\x1b[0m", ansi_code, c);
-                    break;
-                }
-                default:
-                    fputc(c, output);
-                    break;
+            if (config->color_mode != COLOR_NONE) {
+                char ansi_payload[32];
+                _rgbToAnsiEscape(avg_r, avg_g, avg_b, config->color_mode, ansi_payload, sizeof(ansi_payload));
+                fprintf(output, "\x1b[%sm%c\x1b[0m", ansi_payload, c);
+            } else {
+                fputc(c, output);
             }
         }
         fputc('\n', output);
