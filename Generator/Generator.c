@@ -233,6 +233,7 @@ const ASCIIGenConfig DEFAULT_CONFIG = {
     .grayscale_method = GRAY_LUMINANCE,
     .color_mode = COLOR_NONE,
     .dither_mode = DITHER_NONE,
+    .edge_mode = EDGE_NONE,
 };
 
 bool Generator_generateASCIIFromImage(Image* img, FILE* output, const ASCIIGenConfig* config) {
@@ -252,10 +253,12 @@ bool Generator_generateASCIIFromImage(Image* img, FILE* output, const ASCIIGenCo
     if (cfg->color_mode == COLOR_NONE) {
         render_img = Image_toGrayscale(img, cfg->grayscale_method);
         owns_render_img = true;
-    
-        if (cfg->dither_mode == DITHER_FLOYD_STEINBERG) {
+
+        if (cfg->edge_mode == EDGE_SOBEL)
+            Sobel_applySobelEdgeDetection(render_img, false, 0.0f);
+
+        if (cfg->dither_mode == DITHER_FLOYD_STEINBERG)
             Dithering_applyFloydSteinberg(render_img, ascii_width, ascii_height, scale_x, scale_y, cfg->char_set);
-        }
     } else {
         render_img = img;
     }

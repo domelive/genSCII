@@ -8,7 +8,13 @@
 #include <sys/ioctl.h>
 
 #include "Dithering.h"
+#include "Sobel.h"
 #include "../Image/Image.h"
+
+typedef enum EdgeMode {
+    EDGE_NONE,
+    EDGE_SOBEL
+} EdgeMode;
 
 typedef enum DitherMode {
     DITHER_NONE,
@@ -29,6 +35,7 @@ typedef struct ASCIIGenConfig {
     GrayscaleMethod grayscale_method;
     ColorMode color_mode;
     DitherMode dither_mode;
+    EdgeMode edge_mode;
 } ASCIIGenConfig;
 
 extern const ASCIIGenConfig DEFAULT_CONFIG;

@@ -17,8 +17,7 @@ static inline float _sampleCellLuminance(Image* img, int x0, int y0, int x1, int
 void Dithering_applyFloydSteinberg(Image* gray_img, 
                                    int ascii_width, int ascii_height, 
                                    float scale_x, float scale_y,
-                                   const char* char_set)
-{
+                                   const char* char_set) {
     int len = strlen(char_set);
     if (len <= 1) return;
 
