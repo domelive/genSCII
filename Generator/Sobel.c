@@ -15,27 +15,27 @@ static const int SOBEL_Y[3][3] = {
     {  1,   2,   1 }
 };
 
-static inline unsigned int _getPixelSafe(const Image* img, int x, int y) {
-    if (x < 0) x = 0;
-    if (y < 0) y = 0;
-    if (x >= img->width) x = img->width  - 1;
-    if (y >= img->width) y = img->height - 1;
+// static inline unsigned int _getPixelSafe(const Image* img, int x, int y) {
+//     if (x < 0) x = 0;
+//     if (y < 0) y = 0;
+//     if (x >= img->width) x = img->width  - 1;
+//     if (y >= img->width) y = img->height - 1;
+//
+//     return img->data[y * img->width + x];
+// }
 
-    return img->data[y * img->width + x];
-}
-
-static inline void _applyKernel3x3(const Image* img, int x, int y, const int kernel[3][3], float* out_value) {
-    float sum = 0.0f;
-
-    for (int ky = -1; ky <= 1; ky++) {
-        for (int kx = -1; kx <= 1; kx++) {
-            unsigned char pixel = _getPixelSafe(img, x, y);
-            sum += kernel[ky + 1][kx + 1] * pixel;
-        }
-    }
-
-    *out_value = sum;
-}
+// static inline void _applyKernel3x3(const Image* img, int x, int y, const int kernel[3][3], float* out_value) {
+//     float sum = 0.0f;
+//
+//     for (int ky = -1; ky <= 1; ky++) {
+//         for (int kx = -1; kx <= 1; kx++) {
+//             unsigned char pixel = _getPixelSafe(img, x, y);
+//             sum += kernel[ky + 1][kx + 1] * pixel;
+//         }
+//     }
+//
+//     *out_value = sum;
+// }
 
 void Sobel_applySobelEdgeDetection(Image* img, bool normalize, float threshold) {
     if (!img || img->channels != 1) {

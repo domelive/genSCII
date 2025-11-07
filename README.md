@@ -30,7 +30,7 @@ A lightweight, terminal-based ASCII art generator written in C that converts ima
 
 ### Optional Arguments
 
-- -c, --charset SET        : Character set for brightness mapping (default: `@%#*+=-:. `)
+- -c, --charset SET        : Character set for brightness mapping
 - -a, --aspect RATIO       : Terminal character aspect ratio (default: 2.0)
 - -g, --gray-method METHOD : Grayscale method: average or luminance (default: luminance)
 - -m, --colored MODE       : Color mode: 256 (default: none/grayscale)
